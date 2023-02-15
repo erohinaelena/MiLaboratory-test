@@ -1,0 +1,40 @@
+{
+  "name": "mi-laboratory-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "erohinaelena",
+  "license": "ISC",
+  "dependencies": {
+    "@types/d3-format": "^3.0.1",
+    "@types/d3-scale": "^4.0.2",
+    "@types/d3-selection": "^3.0.3",
+    "@types/d3-array": "^3.0.3",
+    "@types/d3-axis": "^3.0.0",
+    "@types/lodash": "^4.14.186",
+    "@types/node": "^18.11.0",
+    "@types/react": "^18.0.21",
+    "@types/react-dom": "^18.0.6",
+    "classnames": "^2.3.2",
+    "d3-format": "^3.1.0",
+    "d3-scale": "^4.0.2",
+    "d3-selection": "^3.0.0",
+    "d3-array": "^3.0.0",
+    "d3-axis": "^3.0.0",
+    "eslint": "^8.25.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-react": "^7.31.10",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "lodash": "^4.17.21",
+    "next": "^12.3.1",
+    "next-images": "^1.8.4",
+    "prettier": "^2.7.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^4.8.4"
+  }
+}

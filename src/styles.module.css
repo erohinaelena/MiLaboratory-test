@@ -1,0 +1,7 @@
+.control + .control {
+    margin-left: 30px;
+}
+
+.label {
+    margin-right: 4px;
+}
