@@ -3,17 +3,17 @@ import Controls from './Controls';
 import Histogram from './Histogram';
 
 export default () => {
-    const [counts, setCounts] = useState<number[]>([]);
-    const [maxY, setMaxY] = useState<number>(0);
+    const [counts, setCounts] = useState<number[][]>([]);
+    const [maxY, setMaxY] = useState<number[]>([0,0]);
     const [minX, setMinX] = useState<number>(0);
     const [maxX, setMaxX] = useState<number>(0);
 
     const onDataUpdate = useCallback(
         (nextData: {
-            data: number[];
+            data: number[][];
             minX: number;
             maxX: number;
-            maxY: number;
+            maxY: number[];
         }) => {
             setCounts(nextData.data);
             setMaxY(nextData.maxY);
