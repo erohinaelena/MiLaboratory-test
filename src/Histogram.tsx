@@ -2,6 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {scaleLinear, scaleLog} from 'd3-scale';
 import {select} from 'd3-selection';
 import {axisBottom, axisLeft} from 'd3-axis';
+import 'd3-transition';
 
 const MARGINS = {
     TOP: 20,
@@ -14,6 +15,7 @@ const HEIGHT = 500;
 const OUTER_WIDTH = WIDTH + MARGINS.LEFT + MARGINS.RIGHT;
 const OUTER_HEIGHT = HEIGHT + MARGINS.TOP + MARGINS.BOTTOM;
 const HISTOGRAM_COLOR = '#38a988';
+const DURATION = 500;
 
 interface HistogramProps {
     data: number[][];
@@ -25,6 +27,7 @@ type scaleXType = 'linear' | 'log';
 
 export default function Histogram({data, minX, maxX, maxY}: HistogramProps) {
     const columnsRef = useRef<SVGGElement>(null);
+    const gridRef = useRef<SVGGElement>(null);
     const xAxisRef = useRef<SVGGElement>(null);
     const yAxisRef = useRef<SVGGElement>(null);
     const [scaleXType, setScaleXType] = useState<scaleXType>('linear');
@@ -35,29 +38,44 @@ export default function Histogram({data, minX, maxX, maxY}: HistogramProps) {
             .domain([0, getValueByXType(maxY)])
             .range([HEIGHT, 0])
             .nice();
-        const step = WIDTH / data.length;
-        const rects = select(columnsRef.current).selectAll<SVGRectElement, number[]>('rect').data(data);
+        const rectsCount = data.length;
+        const step = WIDTH / rectsCount;
+        const rects = select(columnsRef.current)
+            .selectAll<SVGRectElement, number[]>('rect')
+            .data(data, (_d, i) => `${rectsCount}_${i}`);
         rects
             .enter()
             .append('rect')
             .merge(rects)
             .attr('x', (_d, i) => i * step)
-            .attr('y', d => scaleY(getValueByXType(d)))
+            .attr('y', 0)
             .attr('width', step)
+            .transition().duration(DURATION)
             .attr('height', d => HEIGHT - scaleY(getValueByXType(d)));
         rects.exit().remove();
 
-        if (xAxisRef.current && yAxisRef.current) {
-            select(xAxisRef.current).call(axisBottom(scaleX).tickSizeOuter(0));
-            select(yAxisRef.current).call(axisLeft(scaleY).tickSizeOuter(0));
+        if (xAxisRef.current && yAxisRef.current && gridRef.current) {
+            const axisX = axisBottom(scaleX).tickSizeOuter(0);
+            const axisY = axisLeft(scaleY).tickSizeOuter(0);
+            const axisGrid = axisLeft(scaleY).tickSize(-WIDTH).tickFormat('');
+            select(xAxisRef.current).transition().duration(DURATION).call(axisX);
+            select(yAxisRef.current).transition().duration(DURATION).call(axisY);
+            select(gridRef.current).transition().duration(DURATION).call(axisGrid);
         }
     }, [data, minX, maxX, maxY, scaleXType]);
     return (
         <div style={{position: 'relative', display: 'inline-block'}}>
             <svg viewBox={`0 0 ${OUTER_WIDTH} ${OUTER_HEIGHT}`} width={OUTER_WIDTH} height={OUTER_HEIGHT}>
                 <g
-                    ref={columnsRef}
+                    className="ChartGrid"
+                    ref={gridRef}
                     transform={`translate(${MARGINS.LEFT},${MARGINS.TOP})`}
+                    opacity={0.2}
+                    strokeWidth={0.5}
+                />
+                <g
+                    ref={columnsRef}
+                    transform={`translate(${MARGINS.LEFT},${MARGINS.TOP + HEIGHT}) scale(1,-1)`}
                     fill={HISTOGRAM_COLOR}
                     stroke="white"
                     strokeWidth="0.5"
@@ -71,14 +89,20 @@ export default function Histogram({data, minX, maxX, maxY}: HistogramProps) {
                     name="axisX"
                     value="linear"
                     defaultChecked
-                    onChange={e => {setScaleXType(e.target.value as scaleXType);}}
-                /> linear
+                    onChange={e => {
+                        setScaleXType(e.target.value as scaleXType);
+                    }}
+                />{' '}
+                linear
                 <input
                     type="radio"
                     name="axisX"
                     value="log"
-                    onChange={e => {setScaleXType(e.target.value as scaleXType);}}
-                /> log
+                    onChange={e => {
+                        setScaleXType(e.target.value as scaleXType);
+                    }}
+                />{' '}
+                log
             </div>
         </div>
     );

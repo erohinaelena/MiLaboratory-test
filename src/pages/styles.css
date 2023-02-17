@@ -5,3 +5,7 @@ body {
     padding: 20px;
     box-sizing: border-box;
 }
+
+.ChartGrid .domain {
+    opacity: 0;
+}
