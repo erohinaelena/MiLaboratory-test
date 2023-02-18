@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import lodash from 'lodash';
 import styles from './styles.module.css';
 import {generateSampleForLinear, generateSampleForLog} from "./data";
@@ -12,16 +12,22 @@ interface ControlsProps {
 }
 
 export default function Controls({onDataUpdate}: ControlsProps) {
-    const [arr, setArr] = useState<number[]>([]);
-    const [nbins, setNBins] = useState<number>(DEFAULT_NBINS);
+    const arrRef = useRef<number[]>([]);
+    const nbinsRef = useRef(DEFAULT_NBINS);
     const workerReadingFileRef = useRef<Worker>()
     const workerCreatingBinsRef = useRef<Worker>()
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
     const getArrayFromFile = useCallback(async (data:string) => {
         workerReadingFileRef.current?.postMessage(data)
     }, []);
-    const createBins = useCallback(async (a: number[], n:number) => {
-        workerCreatingBinsRef.current?.postMessage({arr: a, nbins: n})
+    const createBins = useCallback(async () => {
+        workerCreatingBinsRef.current?.postMessage({arr: arrRef.current, nbins: nbinsRef.current})
+    }, [])
+    const resetFileInput = useCallback(() => {
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
     }, [])
 
     useEffect(() => {
@@ -29,9 +35,8 @@ export default function Controls({onDataUpdate}: ControlsProps) {
         workerCreatingBinsRef.current = new Worker(new URL('./createBinsWorker.ts', import.meta.url))
 
         workerReadingFileRef.current.onmessage = (event: MessageEvent<number[]>) => {
-            const nextArray = event.data;
-            setArr(nextArray);
-            createBins(nextArray, nbins);
+            arrRef.current = event.data;
+            createBins();
         }
         workerCreatingBinsRef.current.onmessage = (event) => {
             onDataUpdate(event.data);
@@ -47,15 +52,15 @@ export default function Controls({onDataUpdate}: ControlsProps) {
             <span className={styles.control}>
                 <span className={styles.label}>NBINS:</span>
                 <input
-                    defaultValue={nbins.toString()}
+                    defaultValue={DEFAULT_NBINS}
                     type="number"
                     max={MAX_NBINS}
                     min={MIN_NBINS}
                     onChange={e => {
                         const nextNBins = lodash.clamp(Number(e.target.value), MIN_NBINS, MAX_NBINS);
                         if (isFinite(nextNBins)) {
-                            setNBins(nextNBins);
-                            createBins(arr, nextNBins);
+                            nbinsRef.current = nextNBins
+                            createBins();
                         }
                     }}
                 />
@@ -63,6 +68,7 @@ export default function Controls({onDataUpdate}: ControlsProps) {
             <span className={styles.control}>
                 <span className={styles.label}>ARRAY:</span>
                 <input
+                    ref={fileInputRef}
                     type="file"
                     accept=".txt"
                     onChange={e => {
@@ -82,9 +88,9 @@ export default function Controls({onDataUpdate}: ControlsProps) {
             <span className={styles.control}>
                 <button
                     onClick={() => {
-                        const nextArray = generateSampleForLinear();
-                        setArr(nextArray);
-                        createBins(nextArray, nbins);
+                        arrRef.current = generateSampleForLinear();
+                        createBins();
+                        resetFileInput();
                     }}
                 >
                     Generate sample input (linear)
@@ -93,9 +99,9 @@ export default function Controls({onDataUpdate}: ControlsProps) {
             <span className={styles.control}>
                 <button
                     onClick={() => {
-                        const nextArray = generateSampleForLog();
-                        setArr(nextArray);
-                        createBins(nextArray, nbins);
+                        arrRef.current = generateSampleForLog();
+                        createBins();
+                        resetFileInput();
                     }}
                 >
                     Generate sample input (log)

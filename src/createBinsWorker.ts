@@ -1,5 +1,5 @@
-import {createBins} from "./data";
+import {createBinsOnSortedArray} from './data';
 
-addEventListener('message', (event: MessageEvent<{arr:number[],nbins:number}>) => {
-    postMessage(createBins(event.data.arr, event.data.nbins));
-})
+addEventListener('message', (event: MessageEvent<{arr: number[]; nbins: number}>) => {
+    postMessage(createBinsOnSortedArray(event.data.arr, event.data.nbins));
+});

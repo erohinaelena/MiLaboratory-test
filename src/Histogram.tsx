@@ -57,7 +57,7 @@ export default function Histogram({data, minX, maxX, maxY}: HistogramProps) {
         if (xAxisRef.current && yAxisRef.current && gridRef.current) {
             const axisX = axisBottom(scaleX).tickSizeOuter(0);
             const axisY = axisLeft(scaleY).tickSizeOuter(0);
-            const axisGrid = axisLeft(scaleY).tickSize(-WIDTH).tickFormat('');
+            const axisGrid = axisLeft(scaleY).tickSize(-WIDTH).tickFormat(() => '');
             select(xAxisRef.current).transition().duration(DURATION).call(axisX);
             select(yAxisRef.current).transition().duration(DURATION).call(axisY);
             select(gridRef.current).transition().duration(DURATION).call(axisGrid);
@@ -89,18 +89,14 @@ export default function Histogram({data, minX, maxX, maxY}: HistogramProps) {
                     name="axisX"
                     value="linear"
                     defaultChecked
-                    onChange={e => {
-                        setScaleXType(e.target.value as scaleXType);
-                    }}
+                    onChange={e => setScaleXType(e.target.value as scaleXType)}
                 />{' '}
                 linear
                 <input
                     type="radio"
                     name="axisX"
                     value="log"
-                    onChange={e => {
-                        setScaleXType(e.target.value as scaleXType);
-                    }}
+                    onChange={e => setScaleXType(e.target.value as scaleXType)}
                 />{' '}
                 log
             </div>
