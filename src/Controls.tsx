@@ -13,7 +13,7 @@ interface ControlsProps {
 
 export default function Controls({onDataUpdate}: ControlsProps) {
     const arrRef = useRef<number[]>([]);
-    const nbinsRef = useRef(DEFAULT_NBINS);
+    const nbinsRef = useRef<number>(DEFAULT_NBINS);
     const workerReadingFileRef = useRef<Worker>()
     const workerCreatingBinsRef = useRef<Worker>()
     const fileInputRef = useRef<HTMLInputElement>(null)
@@ -29,6 +29,15 @@ export default function Controls({onDataUpdate}: ControlsProps) {
             fileInputRef.current.value = '';
         }
     }, [])
+    const onInputChange = useCallback(lodash.debounce(
+        e => {
+            const nextNBins = lodash.clamp(Number(e.target.value), MIN_NBINS, MAX_NBINS);
+            if (isFinite(nextNBins)) {
+                nbinsRef.current = nextNBins
+                createBins();
+            }
+        }, 200
+    ), [])
 
     useEffect(() => {
         workerReadingFileRef.current = new Worker(new URL('./getArrayFromFileWorker.ts', import.meta.url))
@@ -56,13 +65,7 @@ export default function Controls({onDataUpdate}: ControlsProps) {
                     type="number"
                     max={MAX_NBINS}
                     min={MIN_NBINS}
-                    onChange={e => {
-                        const nextNBins = lodash.clamp(Number(e.target.value), MIN_NBINS, MAX_NBINS);
-                        if (isFinite(nextNBins)) {
-                            nbinsRef.current = nextNBins
-                            createBins();
-                        }
-                    }}
+                    onChange={onInputChange}
                 />
             </span>
             <span className={styles.control}>
