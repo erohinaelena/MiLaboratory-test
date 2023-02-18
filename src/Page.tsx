@@ -7,6 +7,7 @@ export default () => {
     const [maxY, setMaxY] = useState<number[]>([0,0]);
     const [minX, setMinX] = useState<number>(0);
     const [maxX, setMaxX] = useState<number>(0);
+    const [pending, setPending] = useState(false);
 
     const onDataUpdate = useCallback(
         (nextData: {
@@ -22,10 +23,11 @@ export default () => {
         },
         []
     );
+
     return (
         <div>
-            <Controls onDataUpdate={onDataUpdate} />
-            <Histogram data={counts} maxY={maxY} minX={minX} maxX={maxX} />
+            <Controls onDataUpdate={onDataUpdate} onPendingChange={setPending}/>
+            <Histogram data={counts} maxY={maxY} minX={minX} maxX={maxX} pending={pending}/>
         </div>
     );
 };

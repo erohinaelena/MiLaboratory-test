@@ -9,20 +9,26 @@ const DEFAULT_NBINS = 100;
 
 interface ControlsProps {
     onDataUpdate: (nextData: {data: number[][]; minX: number; maxX: number; maxY: number[]}) => void;
+    onPendingChange: (pending:boolean) => void;
 }
 
-export default function Controls({onDataUpdate}: ControlsProps) {
+export default function Controls({onDataUpdate, onPendingChange}: ControlsProps) {
     const arrRef = useRef<number[]>([]);
     const nbinsRef = useRef<number>(DEFAULT_NBINS);
-    const workerReadingFileRef = useRef<Worker>()
-    const workerCreatingBinsRef = useRef<Worker>()
-    const fileInputRef = useRef<HTMLInputElement>(null)
+    const workerReadingFileRef = useRef<Worker>();
+    const workerCreatingBinsRef = useRef<Worker>();
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const pendingCounterRef = useRef(0)
 
     const getArrayFromFile = useCallback(async (data:string) => {
-        workerReadingFileRef.current?.postMessage(data)
+        workerReadingFileRef.current?.postMessage(data);
+        pendingCounterRef.current++;
+        onPendingChange(pendingCounterRef.current !== 0);
     }, []);
     const createBins = useCallback(async () => {
-        workerCreatingBinsRef.current?.postMessage({arr: arrRef.current, nbins: nbinsRef.current})
+        workerCreatingBinsRef.current?.postMessage({arr: arrRef.current, nbins: nbinsRef.current});
+        pendingCounterRef.current++;
+        onPendingChange(pendingCounterRef.current !== 0);
     }, [])
     const resetFileInput = useCallback(() => {
         if (fileInputRef.current) {
@@ -45,10 +51,13 @@ export default function Controls({onDataUpdate}: ControlsProps) {
 
         workerReadingFileRef.current.onmessage = (event: MessageEvent<number[]>) => {
             arrRef.current = event.data;
+            pendingCounterRef.current--;
             createBins();
         }
         workerCreatingBinsRef.current.onmessage = (event) => {
             onDataUpdate(event.data);
+            pendingCounterRef.current--;
+            onPendingChange(pendingCounterRef.current !== 0);
         }
         return () => {
             workerReadingFileRef.current?.terminate();
@@ -57,7 +66,7 @@ export default function Controls({onDataUpdate}: ControlsProps) {
     }, [])
 
     return (
-        <div>
+        <div className={styles.controls}>
             <span className={styles.control}>
                 <span className={styles.label}>NBINS:</span>
                 <input

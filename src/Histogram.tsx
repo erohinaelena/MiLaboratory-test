@@ -3,6 +3,7 @@ import {scaleLinear, scaleLog} from 'd3-scale';
 import {select} from 'd3-selection';
 import {axisBottom, axisLeft} from 'd3-axis';
 import 'd3-transition';
+import styles from './styles.module.css'
 
 const MARGINS = {
     TOP: 20,
@@ -22,10 +23,11 @@ interface HistogramProps {
     minX: number;
     maxX: number;
     maxY: number[];
+    pending: boolean;
 }
 type scaleXType = 'linear' | 'log';
 
-export default function Histogram({data, minX, maxX, maxY}: HistogramProps) {
+export default function Histogram({data, minX, maxX, maxY, pending}: HistogramProps) {
     const columnsRef = useRef<SVGGElement>(null);
     const gridRef = useRef<SVGGElement>(null);
     const xAxisRef = useRef<SVGGElement>(null);
@@ -64,14 +66,14 @@ export default function Histogram({data, minX, maxX, maxY}: HistogramProps) {
         }
     }, [data, minX, maxX, maxY, scaleXType]);
     return (
-        <div style={{position: 'relative', display: 'inline-block'}}>
+        <div className={styles.chartContainer}>
             <svg viewBox={`0 0 ${OUTER_WIDTH} ${OUTER_HEIGHT}`} width={OUTER_WIDTH} height={OUTER_HEIGHT}>
                 <g
                     className="ChartGrid"
                     ref={gridRef}
                     transform={`translate(${MARGINS.LEFT},${MARGINS.TOP})`}
-                    opacity={0.2}
-                    strokeWidth={0.5}
+                    opacity="0.2"
+                    strokeWidth="0.5"
                 />
                 <g
                     ref={columnsRef}
@@ -83,7 +85,12 @@ export default function Histogram({data, minX, maxX, maxY}: HistogramProps) {
                 <g ref={xAxisRef} transform={`translate(${MARGINS.LEFT},${MARGINS.TOP + HEIGHT})`} />
                 <g ref={yAxisRef} transform={`translate(${MARGINS.LEFT},${MARGINS.TOP})`} />
             </svg>
-            <div style={{position: 'absolute', top: '100%', right: '20px'}}>
+            {pending && (
+                <div className={styles.pendingPanel}>
+                    <div className={styles.spinner}/>
+                </div>
+            )}
+            <div className={styles.axisControl}>
                 <input
                     type="radio"
                     name="axisX"
