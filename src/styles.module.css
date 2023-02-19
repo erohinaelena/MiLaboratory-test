@@ -10,9 +10,6 @@
     position: relative;
     display: inline-block;
 }
-.chartContainer svg {
-    overflow: visible;
-}
 
 .controls {
     padding-left: 60px;

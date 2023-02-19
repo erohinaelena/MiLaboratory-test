@@ -1,4 +1,4 @@
-import {scaleLinear, scaleLog, scaleThreshold} from "d3-scale";
+import {scaleLinear, scaleLog} from "d3-scale";
 import {extent} from "d3-array";
 import lodash from "lodash";
 import {randomNormal} from "d3-random";
@@ -11,7 +11,6 @@ function linearToLog(domain: number[], xArr: number[]) {
 
 // Для несортированного массива
 export function createBins(arr: number[], nbins: number) {
-    console.time('start')
     if (arr.length === 0 || nbins === 0) {
         return {
             data: [],
@@ -30,21 +29,29 @@ export function createBins(arr: number[], nbins: number) {
         };
     }
     const counts = lodash.range(0, nbins).map(() => [0, 0]);
-    const binsRange = lodash.range(0, nbins);
-    const stepLinear = (maxX - minX) / nbins;
-    const domainLinear = [minX, maxX];
-    const linearThresholds = lodash.range(1, nbins).map((el) => minX + el * stepLinear);
-    linearThresholds.push(maxX)
-    const domainLog = linearToLog(domainLinear, linearThresholds);
 
-    const scaleForLinearBins = scaleThreshold().domain(linearThresholds).range(binsRange);
-    const scaleForLogBins = scaleThreshold().domain(domainLog).range(binsRange);
+    const stepLinear = (maxX - minX) / nbins;
+    const getLinearBin = (x:number) => {
+        return x === maxX ? nbins - 1 : Math.floor((x - minX) / stepLinear);
+    }
+
+    const minXLog = Math.log10(minX);
+    const stepLog = (Math.log10(maxX) - Math.log10(minX)) / nbins;
+    const getLogBin = (x:number) => {
+        if (x === minX) {
+            return 0;
+        }
+        if (x === maxX) {
+            return nbins - 1;
+        }
+        return Math.floor((Math.log10(x) - minXLog) / stepLog);
+    }
 
     let maxLinearCount = 0;
     let maxLogCount = 0;
     arr.forEach((el: number) => {
-        const linearBin = scaleForLinearBins(el);
-        const logBin = scaleForLogBins(el);
+        let linearBin = getLinearBin(el);
+        let logBin = getLogBin(el);
         counts[linearBin][0]++;
         counts[logBin][1]++;
         if (counts[linearBin][0] > maxLinearCount) {
@@ -55,7 +62,6 @@ export function createBins(arr: number[], nbins: number) {
         }
     });
 
-    console.timeEnd('start')
     return {
         data: counts,
         minX,
@@ -66,7 +72,6 @@ export function createBins(arr: number[], nbins: number) {
 
 // Для отсортированного массива
 export function createBinsOnSortedArray(arr: number[], nbins: number) {
-    console.time('start')
     if (arr.length === 0 || nbins === 0) {
         return {
             data: [],
@@ -114,7 +119,6 @@ export function createBinsOnSortedArray(arr: number[], nbins: number) {
             maxLogCount = counts[currentBinLog][1];
         }
     });
-    console.timeEnd('start')
     return {
         data: counts,
         minX,
